@@ -1,8 +1,9 @@
-# @mi-lu-uncle/dsh-skill-manager
+# @mi-lu-uncle/dsh-skill-console
 
-A DeepSeek Harness **community plugin** that provides the human-facing skill
-management surface DSH does not ship, through the `/` command menu:
+A DeepSeek Harness **community plugin** that gives you both a **visual Skills
+panel** and a **command-line skill manager**:
 
+- **Settings → Skills panel** — browse every installed skill (name · invocation · source · path), with search
 - **`/skills`** — list skills (name · invocation · source repo), optionally filtered
 - **`/skills-uninstall <名字>`** — remove an installed skill
 - **`/skills-update [仓库名]`** — pull a repo mirror and re-sync its links (default `mattpocock-skills`)
@@ -11,9 +12,9 @@ management surface DSH does not ship, through the `/` command menu:
 ## Why
 
 DSH skills (`SKILL.md` bundles discovered by `@deepseek-ai/dsh-skill-filesystem`)
-are not slash commands, and no shipped UI lists them. This plugin closes that
-gap: `/skills` reads the same registry snapshot the model catalog is built from,
-and the other commands operate on the symlink layout in `~/.agents/skills`
+ship no UI. This plugin closes the gap twice: a read-only Settings panel
+(client half) for browsing, and `/` commands (host half) for reading and
+writing. The write commands operate on the symlink layout in `~/.agents/skills`
 (`git pull` + reconcile), after which DSH's watcher hot-reloads the result.
 
 ## Install
@@ -21,18 +22,18 @@ and the other commands operate on the symlink layout in `~/.agents/skills`
 From this GitHub repository (recommended):
 
 ```sh
-dsh plugin --profile desktop add https://github.com/mi-lu-uncle/dsh-skill-manager.git
+dsh plugin --profile desktop add https://github.com/mi-lu-uncle/dsh-skill-console.git
 ```
 
 Or from a local path or tarball:
 
 ```sh
-dsh plugin --profile desktop add /absolute/path/to/dsh-skill-manager
-dsh plugin --profile desktop add ./dsh-skill-manager-1.0.0.tgz
+dsh plugin --profile desktop add /absolute/path/to/dsh-skill-console
+dsh plugin --profile desktop add ./dsh-skill-console-1.0.0.tgz
 ```
 
 Note: `link:`-installed plugins are not watched by HMR, so editing
-`lib/index.js` requires an app restart to take effect.
+`lib/index.js` or `lib/client.js` requires an app restart to take effect.
 
 ## Usage
 
@@ -45,6 +46,10 @@ Note: `link:`-installed plugins are not watched by HMR, so editing
 /skills-doctor             # structural health check
 ```
 
+The panel lives in **Settings → Skills** (sidebar). Each entry shows the
+invocation type and the source root/repo; expand a card for description and
+path. The panel is read-only — use the `/` commands to change anything.
+
 Each `/skills` line reads `- /name [invocation · 来源:repo] — description`:
 
 - **invocation** — `模型+用户` / `仅模型` / `仅用户` / `未开放`
@@ -53,14 +58,15 @@ Each `/skills` line reads `- /name [invocation · 来源:repo] — description`:
 
 ## Configuration
 
-Override the managed directories on the `skill-manager` row in your profile
+Override the managed directories on the `skill-console` row in your profile
 patch (`cordis.patch.yml`) if needed:
 
 ```yaml
-- id: skill-manager
+- id: skill-console
   config:
     agentsSkillsDir: /Users/you/.agents/skills   # default
-    reposDir: /Users/you/.dsh/repos               # default
+    dshSkillsDir: /Users/you/.dsh/skills         # default
+    reposDir: /Users/you/.dsh/repos              # default
 ```
 
 ## Distribution
@@ -81,9 +87,10 @@ the bundle; extend it when a new DSH release is verified.
 
 | File | Role |
 |---|---|
-| `lib/index.js` | The plugin: four commands on `ctx.commands` + exported helpers |
+| `lib/index.js` | Host half: four commands + the panel's `/api/skill-console/list` route |
+| `lib/client.js` | Client half: the Settings "Skills" panel (React) |
 | `cordis.patch.yml` | Bundle patch that mounts the package as one host row |
-| `package.json` | npm metadata + `dsh.bundle`/`dsh.compatibility` |
+| `package.json` | npm metadata + `dsh.bundle`/`dsh.client`/`dsh.compatibility` |
 | `test/smoke.mjs` | Offline test of `/skills` against fake services |
 | `test/manager.test.mjs` | Filesystem commands against a throwaway git remote |
 

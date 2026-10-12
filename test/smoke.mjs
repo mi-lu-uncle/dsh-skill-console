@@ -8,12 +8,13 @@
 import assert from 'node:assert/strict';
 import { apply, inject, name } from '../lib/index.js';
 
-assert.equal(name, 'skill-manager');
+assert.equal(name, 'skill-console');
 assert.deepEqual(inject, ['commands', 'skills']);
 
 const registered = [];
 const calls = [];
 const ctx = {
+  get: () => undefined,
   commands: { register: (definition) => registered.push(definition) },
   skills: {
     snapshot: async (options) => {
@@ -81,6 +82,7 @@ assert.match(empty.text, /没有匹配/);
 
 const brokenRegistered = [];
 apply({
+  get: () => undefined,
   commands: { register: (definition) => brokenRegistered.push(definition) },
   skills: { snapshot: async () => { throw new Error('discovery exploded'); } },
 });
