@@ -9,12 +9,14 @@ import assert from 'node:assert/strict';
 import { apply, inject, name } from '../lib/index.js';
 
 assert.equal(name, 'skill-console');
-assert.deepEqual(inject, ['commands', 'skills']);
+assert.deepEqual(inject, ['commands', 'skills', 'webServer']);
 
 const registered = [];
 const calls = [];
+const registeredRoutes = [];
 const ctx = {
-  get: () => undefined,
+  webServer: { register: (route) => { registeredRoutes.push(route); return () => {}; } },
+  effect: (fn) => { const d = fn(); return () => (typeof d === 'function' ? d() : undefined); },
   commands: { register: (definition) => registered.push(definition) },
   skills: {
     snapshot: async (options) => {
@@ -49,6 +51,8 @@ const ctx = {
 apply(ctx);
 
 assert.equal(registered.length, 4, 'registers exactly four commands');
+assert.equal(registeredRoutes.length, 1, 'registers the panel API route');
+assert.equal(registeredRoutes[0].path, '/api/skill-console/list');
 assert.deepEqual(
   registered.map((d) => d.name),
   ['skills', 'skills-uninstall', 'skills-update', 'skills-doctor'],
@@ -82,7 +86,8 @@ assert.match(empty.text, /没有匹配/);
 
 const brokenRegistered = [];
 apply({
-  get: () => undefined,
+  webServer: { register: () => () => {} },
+  effect: () => () => {},
   commands: { register: (definition) => brokenRegistered.push(definition) },
   skills: { snapshot: async () => { throw new Error('discovery exploded'); } },
 });
