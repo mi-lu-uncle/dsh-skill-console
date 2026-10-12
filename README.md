@@ -47,14 +47,15 @@ Note: `link:`-installed plugins are not watched by HMR, so editing
 ```
 
 The panel lives in the **main sidebar** (the Skills icon, next to Plugins) and
-also under **Settings → Skills**. It is a complete management console: a filter
-sidebar (source / invocation / sort) beside a responsive card gallery. Click a
-card for a slide-over detail drawer with the description, invocation, source,
-path, a button that copies its `/name` command, and an **uninstall** button. The
-top toolbar **installs** skills from a git URL or local path (preview → select →
-link), **updates** the mattpocock-skills mirror, and runs a **health check**. The
-same actions also exist as `/skills-uninstall`, `/skills-update` and
-`/skills-doctor`.
+also under **Settings → Skills**. It is a search-centric management console: a
+large centred search bar over a full-width card gallery, with the filters
+(source / invocation / sort) tucked into a slide-out panel behind the **筛选**
+button. Click a card for a slide-over detail drawer with the description,
+invocation, source, path, a button that copies its `/name` command, and an
+**uninstall** button. The header **installs** skills from a git URL or local path
+(preview → select → link), **updates** the mattpocock-skills mirror, and runs a
+**health check**. The same actions also exist as `/skills-uninstall`,
+`/skills-update` and `/skills-doctor`.
 
 Each `/skills` line reads `- /name [invocation · 来源:repo] — description`:
 
