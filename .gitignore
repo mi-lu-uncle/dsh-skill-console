@@ -25,3 +25,6 @@ Thumbs.db
 # 环境变量与密钥
 .env
 .env.*
+
+# throwaway UI prototypes
+prototype/

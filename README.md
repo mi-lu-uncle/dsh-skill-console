@@ -46,9 +46,12 @@ Note: `link:`-installed plugins are not watched by HMR, so editing
 /skills-doctor             # structural health check
 ```
 
-The panel lives in **Settings → Skills** (sidebar). Each entry shows the
-invocation type and the source root/repo; expand a card for description and
-path. The panel is read-only — use the `/` commands to change anything.
+The panel lives in the **main sidebar** (the Skills icon, next to Plugins) and
+also under **Settings → Skills**. It is a filter sidebar (source / invocation /
+sort) beside a responsive card gallery; click a card for a slide-over detail
+drawer with the description, invocation, source, path, and a button that copies
+its `/name` command. The panel is read-only — use the `/` commands to change
+anything.
 
 Each `/skills` line reads `- /name [invocation · 来源:repo] — description`:
 
