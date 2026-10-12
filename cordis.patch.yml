@@ -1,0 +1,6 @@
+# Bundle patch layer: the row loads this package's main entry as one host
+# plugin (a plain Cordis plugin). No client half, so nothing is injected into
+# the browser bundle.
+- insert:
+    - id: skill-manager
+      name: dsh-skill-manager
