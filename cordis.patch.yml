@@ -3,4 +3,4 @@
 # the browser bundle.
 - insert:
     - id: skill-manager
-      name: dsh-skill-manager
+      name: '@mi-lu-uncle/dsh-skill-manager'

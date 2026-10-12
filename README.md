@@ -1,4 +1,4 @@
-# dsh-skill-manager
+# @mi-lu-uncle/dsh-skill-manager
 
 A DeepSeek Harness **community plugin** that provides the human-facing skill
 management surface DSH does not ship, through the `/` command menu:
@@ -21,14 +21,14 @@ and the other commands operate on the symlink layout in `~/.agents/skills`
 From a published registry package (once published):
 
 ```sh
-dsh plugin --profile desktop add dsh-skill-manager
+dsh plugin --profile desktop add @mi-lu-uncle/dsh-skill-manager
 ```
 
 From a Git URL, local path, or tarball:
 
 ```sh
 dsh plugin --profile desktop add /absolute/path/to/dsh-skill-manager
-dsh plugin --profile desktop add https://github.com/<you>/dsh-skill-manager.git
+dsh plugin --profile desktop add https://github.com/mi-lu-uncle/dsh-skill-manager.git
 dsh plugin --profile desktop add ./dsh-skill-manager-1.0.0.tgz
 ```
 
@@ -66,11 +66,12 @@ patch (`cordis.patch.yml`) if needed:
 
 ## Publishing
 
-The package is npm-ready. Before publishing, add an `author`/`repository`
-field and (optionally) scope the name, then:
+The package name is scoped (`@mi-lu-uncle/dsh-skill-manager`), so publish with
+`--access public`:
 
 ```sh
-npm version patch && npm publish
+npm login
+npm publish --access public
 ```
 
 The `dsh.compatibility.dshReleases` map gates which DSH runtime versions accept

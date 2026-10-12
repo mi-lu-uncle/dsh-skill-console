@@ -1,5 +1,5 @@
 {
-  "name": "dsh-skill-manager",
+  "name": "@mi-lu-uncle/dsh-skill-manager",
   "version": "1.0.0",
   "description": "DSH community plugin for managing skills: /skills, /skills-uninstall, /skills-update, /skills-doctor.",
   "author": "milu",
