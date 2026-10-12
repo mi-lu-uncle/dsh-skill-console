@@ -12,8 +12,13 @@ import path from 'node:path';
 import {
   apply,
   doctorReport,
+  ensureRepo,
   findSkills,
+  installSkills,
   parseFrontmatter,
+  previewRepo,
+  readJson,
+  repoNameFromSource,
   syncRepo,
   uninstallSkill,
 } from '../lib/index.js';
@@ -73,6 +78,34 @@ assert.equal(r2.removed, 1);
 assert.equal(uninstallSkill(dest, 'bbb').ok, true);
 assert.ok(!fs.existsSync(path.join(dest, 'bbb')));
 assert.equal(uninstallSkill(dest, 'missing').ok, false);
+
+// ---- repoNameFromSource ----
+assert.equal(repoNameFromSource('https://github.com/org/my-skills.git'), 'my-skills');
+assert.equal(repoNameFromSource('git@github.com:org/my-skills.git'), 'my-skills');
+assert.equal(repoNameFromSource('/Users/me/local-skills'), 'local-skills');
+
+// ---- ensureRepo / previewRepo / installSkills ----
+const installRepos = path.join(tmp, 'install-repos');
+const installDest = path.join(tmp, 'install-dest');
+const cloneDir = await ensureRepo(installRepos, origin); // origin now has bbb + zzz
+const preview = previewRepo(installDest, cloneDir);
+assert.deepEqual(preview.map((s) => s.name).sort(), ['bbb', 'zzz']);
+assert.ok(preview.every((s) => s.installed === false && s.userOnly === false));
+const installed = installSkills(installDest, cloneDir, ['bbb', 'zzz']);
+assert.deepEqual(installed.installed.sort(), ['bbb', 'zzz']);
+assert.ok(fs.existsSync(path.join(installDest, 'bbb')));
+assert.ok(fs.existsSync(path.join(installDest, 'zzz')));
+assert.deepEqual(installSkills(installDest, cloneDir, ['nope']).missing, ['nope']);
+fs.rmSync(path.join(installDest, 'bbb')); // replace the symlink with a real dir to force a conflict
+fs.mkdirSync(path.join(installDest, 'bbb'));
+assert.deepEqual(installSkills(installDest, cloneDir, ['bbb']).conflicts, ['bbb']);
+
+// ---- readJson ----
+assert.deepEqual(await readJson({ body: '{"a":1}' }), { a: 1 });
+assert.deepEqual(await readJson({ body: '{"name":"x"}' }), { name: 'x' });
+const streamReq = (text) => ({ body: undefined, async *[Symbol.asyncIterator]() { if (text) yield Buffer.from(text); } });
+assert.deepEqual(await readJson(streamReq('{"name":"x"}')), { name: 'x' });
+assert.deepEqual(await readJson(streamReq('')), {});
 
 // ---- doctorReport ----
 fs.symlinkSync(path.join(repo, 'skills', 'nowhere'), path.join(dest, 'ghost')); // dead link

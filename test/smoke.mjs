@@ -51,8 +51,18 @@ const ctx = {
 apply(ctx);
 
 assert.equal(registered.length, 4, 'registers exactly four commands');
-assert.equal(registeredRoutes.length, 1, 'registers the panel API route');
-assert.equal(registeredRoutes[0].path, '/api/skill-console/list');
+assert.equal(registeredRoutes.length, 6, 'registers the six panel API routes');
+assert.deepEqual(
+  registeredRoutes.map((r) => r.path),
+  [
+    '/api/skill-console/list',
+    '/api/skill-console/uninstall',
+    '/api/skill-console/install/preview',
+    '/api/skill-console/install',
+    '/api/skill-console/update',
+    '/api/skill-console/doctor',
+  ],
+);
 assert.deepEqual(
   registered.map((d) => d.name),
   ['skills', 'skills-uninstall', 'skills-update', 'skills-doctor'],
