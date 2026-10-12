@@ -91,7 +91,7 @@ assert.ok(doc.orphans.includes('orphan-repo'), 'detects orphan mirror');
 const registered = [];
 apply(
   { commands: { register: (d) => registered.push(d) }, skills: { snapshot: async () => ({ complete: true, skills: [] }) } },
-  { agentsSkillsDir: dest, reposDir: reposDir },
+  { skillsDir: dest, reposDir: reposDir },
 );
 assert.deepEqual(registered.map((d) => d.name), ['skills', 'skills-uninstall', 'skills-update', 'skills-doctor']);
 

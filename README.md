@@ -14,7 +14,7 @@ panel** and a **command-line skill manager**:
 DSH skills (`SKILL.md` bundles discovered by `@deepseek-ai/dsh-skill-filesystem`)
 ship no UI. This plugin closes the gap twice: a read-only Settings panel
 (client half) for browsing, and `/` commands (host half) for reading and
-writing. The write commands operate on the symlink layout in `~/.agents/skills`
+writing. The write commands operate on the symlink layout in `~/.dsh/skills`
 (`git pull` + reconcile), after which DSH's watcher hot-reloads the result.
 
 ## Install
@@ -64,8 +64,7 @@ patch (`cordis.patch.yml`) if needed:
 ```yaml
 - id: skill-console
   config:
-    agentsSkillsDir: /Users/you/.agents/skills   # default
-    dshSkillsDir: /Users/you/.dsh/skills         # default
+    skillsDir: /Users/you/.dsh/skills            # default
     reposDir: /Users/you/.dsh/repos              # default
 ```
 
