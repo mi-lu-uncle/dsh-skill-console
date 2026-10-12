@@ -2,6 +2,8 @@
   "name": "dsh-skill-manager",
   "version": "1.0.0",
   "description": "DSH community plugin for managing skills: /skills, /skills-uninstall, /skills-update, /skills-doctor.",
+  "author": "milu",
+  "repository": "https://github.com/mi-lu-uncle/dsh-skill-manager",
   "keywords": [
     "dsh",
     "deepseek-harness",
