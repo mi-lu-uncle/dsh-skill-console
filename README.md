@@ -18,17 +18,16 @@ and the other commands operate on the symlink layout in `~/.agents/skills`
 
 ## Install
 
-From a published registry package (once published):
+From this GitHub repository (recommended):
 
 ```sh
-dsh plugin --profile desktop add @mi-lu-uncle/dsh-skill-manager
+dsh plugin --profile desktop add https://github.com/mi-lu-uncle/dsh-skill-manager.git
 ```
 
-From a Git URL, local path, or tarball:
+Or from a local path or tarball:
 
 ```sh
 dsh plugin --profile desktop add /absolute/path/to/dsh-skill-manager
-dsh plugin --profile desktop add https://github.com/mi-lu-uncle/dsh-skill-manager.git
 dsh plugin --profile desktop add ./dsh-skill-manager-1.0.0.tgz
 ```
 
@@ -64,10 +63,11 @@ patch (`cordis.patch.yml`) if needed:
     reposDir: /Users/you/.dsh/repos               # default
 ```
 
-## Publishing
+## Distribution
 
-The package name is scoped (`@mi-lu-uncle/dsh-skill-manager`), so publish with
-`--access public`:
+The primary channel is this GitHub repository (install via the git URL above).
+Publishing to npm is optional; if you do, the scoped name requires `--access
+public`:
 
 ```sh
 npm login
