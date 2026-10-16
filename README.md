@@ -1,5 +1,7 @@
 # @mi-lu-uncle/dsh-skill-console
 
+English | [简体中文](README.zh-CN.md) | [日本語](README.ja.md)
+
 A DeepSeek Harness **community plugin** that gives you both a **visual Skills
 panel** and a **command-line skill manager**:
 

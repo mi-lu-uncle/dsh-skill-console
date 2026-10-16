@@ -1,0 +1,90 @@
+# @mi-lu-uncle/dsh-skill-console
+
+[English](README.md) | 简体中文 | [日本語](README.ja.md)
+
+一个 DeepSeek Harness（DSH）**社区插件**，同时提供**可视化技能面板**和**命令行技能管理**：
+
+- **Settings → Skills 面板** — 浏览所有已安装技能（名称 · 调用方式 · 来源 · 路径），支持搜索
+- **`/skills`** — 列出技能（名称 · 调用方式 · 来源仓库），可按关键词过滤
+- **`/skills-uninstall <名字>`** — 卸载一个已安装技能
+- **`/skills-update [仓库名]`** — 拉取仓库镜像并重新同步其链接（默认 `mattpocock-skills`）
+- **`/skills-doctor`** — 结构体检：死链、无效 frontmatter、孤儿镜像
+
+## 为什么做这个
+
+DSH 的技能（由 `@deepseek-ai/dsh-skill-filesystem` 发现的 `SKILL.md` 包）本身不带任何 UI。这个插件从两头补齐：面向浏览的 Settings 面板（client 半），以及面向读写的 `/` 命令（host 半）。写命令作用于 `~/.dsh/skills` 的符号链接布局（`git pull` + 对账同步），之后 DSH 的 watcher 会热加载结果。
+
+## 安装
+
+推荐从 GitHub 仓库安装：
+
+```sh
+dsh plugin --profile desktop add https://github.com/mi-lu-uncle/dsh-skill-console.git
+```
+
+也支持本地路径或 tarball：
+
+```sh
+dsh plugin --profile desktop add /absolute/path/to/dsh-skill-console
+dsh plugin --profile desktop add ./dsh-skill-console-1.0.0.tgz
+```
+
+注意：以 `link:` 方式安装的插件不走 HMR 监听，修改 `lib/index.js` 或 `lib/client.js` 后需要重启 App 才能生效。
+
+## 用法
+
+```
+/skills                    # 列出本会话的每个技能
+/skills docx               # 按关键词过滤（名称、描述、whenToUse）
+/skills-uninstall pr       # 移除 `pr` 技能
+/skills-update             # 更新 mattpocock-skills 镜像（默认）
+/skills-update my-repo     # 更新另一个仓库镜像
+/skills-doctor             # 结构体检
+```
+
+面板位于**主侧边栏**（Skills 图标，在 Plugins 旁边），同时也在 **Settings → Skills** 下。它是一个以搜索为核心的管理台：大号居中搜索框下面是整宽卡片画廊，筛选器（来源 / 调用方式 / 排序）收在 **筛选** 按钮后面的滑出面板里。点击卡片打开滑出式详情抽屉，里面有描述、调用方式、来源、路径，一个复制 `/名称` 命令的按钮，以及**卸载**按钮。顶栏提供**安装**（git URL 或本地路径：预览 → 勾选 → 链接）、**更新** mattpocock-skills 镜像、**健康检查**。同样的操作也可以通过 `/skills-uninstall`、`/skills-update`、`/skills-doctor` 完成。
+
+`/skills` 每一行的格式是 `- /名称 [调用方式 · 来源:仓库] — 描述`：
+
+- **调用方式** — `模型+用户` / `仅模型` / `仅用户` / `未开放`
+- **来源** — 符号链接解析到的仓库镜像（如 `mattpocock-skills`），或非仓库技能的发现来源标签（`内置`、`DSH用户`、`项目`…）
+
+## 配置
+
+如需覆盖受管目录，在 profile 补丁（`cordis.patch.yml`）的 `skill-console` 行上设置：
+
+```yaml
+- id: skill-console
+  config:
+    skillsDir: /Users/you/.dsh/skills            # 默认值
+    reposDir: /Users/you/.dsh/repos              # 默认值
+```
+
+## 分发
+
+主要渠道是 GitHub 仓库（用上面的 git URL 安装）。发布到 npm 是可选的；如果要发布，scoped 包名需要 `--access public`：
+
+```sh
+npm login
+npm publish --access public
+```
+
+`dsh.compatibility.dshReleases` 决定哪些 DSH 运行时版本接受这个 bundle；验证过新版本后请扩展这张表。
+
+## 布局
+
+| 文件 | 作用 |
+|---|---|
+| `lib/index.js` | Host 半：四个命令 + 面板的 `/api/skill-console/list` 路由 |
+| `lib/client.js` | Client 半：Settings 的「Skills」面板（React） |
+| `cordis.patch.yml` | Bundle 补丁，把本包作为一个 host 行挂载 |
+| `package.json` | npm 元数据 + `dsh.bundle`/`dsh.client`/`dsh.compatibility` |
+| `test/smoke.mjs` | `/skills` 对假服务的离线测试 |
+| `test/manager.test.mjs` | 针对一次性 git 远端的文件系统命令测试 |
+
+## 测试
+
+```sh
+node test/smoke.mjs
+node test/manager.test.mjs
+```
