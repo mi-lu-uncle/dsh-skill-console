@@ -69,7 +69,7 @@ npm login
 npm publish --access public
 ```
 
-`dsh.compatibility.dshReleases` は、どの DSH ランタイムバージョンがこのバンドルを受け入れるかを制御します。新しいリリースを検証したらマップを拡張してください。
+実際の判定に使われるのは、プラグインが宣言した **`@deepseek-ai/dsh-*` の peer 範囲**です（実行中の DSH バージョンと semver で比較、プレリリースも含む）。peer を特定バージョン（`0.2.0-rc.2`）に固定すると、アプリが `0.2.1-rc.2` に上がった瞬間に「非互換」と判定されます。peer は `^0.2.0-rc.2` に保ち、`dsh.compatibility.dshReleases`（マーケット用の互換表）は新しいリリースを検証したときに追記してください。
 
 ## 構成
 

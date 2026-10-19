@@ -69,7 +69,7 @@ npm login
 npm publish --access public
 ```
 
-`dsh.compatibility.dshReleases` 决定哪些 DSH 运行时版本接受这个 bundle；验证过新版本后请扩展这张表。
+真正拦人的是插件声明的 **`@deepseek-ai/dsh-*` peer 范围**：loader 拿它和当前 DSH 版本做 semver 比对（含预发布版）。把 peer 钉死成某一个版本（`0.2.0-rc.2`），App 一升到 `0.2.1-rc.2` 就会被判「不兼容」。所以 peer 要写成 `^0.2.0-rc.2`；`dsh.compatibility.dshReleases`（市场用的兼容表）在验证过新版本后再补一条。
 
 ## 布局
 

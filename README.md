@@ -88,8 +88,12 @@ npm login
 npm publish --access public
 ```
 
-The `dsh.compatibility.dshReleases` map gates which DSH runtime versions accept
-the bundle; extend it when a new DSH release is verified.
+The loader's gate is the plugin's **`@deepseek-ai/dsh-*` peer ranges**, compared
+against the running DSH version (semver, with prereleases included) — a peer
+pinned to one exact release (`0.2.0-rc.2`) turns the plugin "incompatible" the
+moment the app moves to `0.2.1-rc.2`. Keep those ranges as `^0.2.0-rc.2`, and
+extend `dsh.compatibility.dshReleases` (the market's compatibility table) when a
+new DSH release has been verified.
 
 ## Layout
 
