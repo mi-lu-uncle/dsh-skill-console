@@ -1,6 +1,6 @@
 {
   "name": "@mi-lu-uncle/dsh-skill-console",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "DSH community plugin: a Skills settings panel plus /skills, /skills-uninstall, /skills-update, /skills-doctor.",
   "author": "milu",
   "repository": "https://github.com/mi-lu-uncle/dsh-skill-console",
@@ -39,14 +39,15 @@
     },
     "compatibility": {
       "dshReleases": {
-        "0.2.0-rc.2": "compatible"
+        "0.2.0-rc.2": "compatible",
+        "0.2.1-rc.2": "compatible"
       }
     }
   },
   "peerDependencies": {
     "@deepseek-ai/cordis": "~4.0.4",
-    "@deepseek-ai/dsh-commands": "0.2.0-rc.2",
-    "@deepseek-ai/dsh-skill": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-commands": "^0.2.0-rc.2",
+    "@deepseek-ai/dsh-skill": "^0.2.0-rc.2",
     "react": "^18.2.0"
   }
 }
