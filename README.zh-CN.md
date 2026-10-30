@@ -4,11 +4,13 @@
 
 一个 DeepSeek Harness（DSH）**社区插件**，同时提供**可视化技能面板**和**命令行技能管理**：
 
-- **Settings → Skills 面板** — 浏览所有已安装技能（名称 · 调用方式 · 来源 · 路径），支持搜索
+- **Settings → Skills 面板** — 与 DSH 全量发现合并的技能总览：受管的 `~/.dsh/skills`（仓库镜像 + 本地技能；名称 · 调用方式 · 来源 · 路径）加内置与项目级技能（只读展示），支持搜索
 - **`/skills`** — 列出技能（名称 · 调用方式 · 来源仓库），可按关键词过滤
 - **`/skills-uninstall <名字>`** — 卸载一个已安装技能
 - **`/skills-update [仓库名]`** — 拉取仓库镜像并重新同步其链接（默认 `mattpocock-skills`）
 - **`/skills-doctor`** — 结构体检：死链、无效 frontmatter、孤儿镜像
+
+若技能通过 CC Switch 统一管理，可设置 `managementMode: cc-switch`。该模式只保留技能展示、搜索和 `/skills`；隐藏安装、更新、卸载及体检入口，并拒绝旧管理接口。默认 `standalone` 模式保留下文的独立管理功能。
 
 ## 为什么做这个
 
@@ -42,7 +44,7 @@ dsh plugin --profile desktop add ./dsh-skill-console-1.0.0.tgz
 /skills-doctor             # 结构体检
 ```
 
-面板位于**主侧边栏**（Skills 图标，在 Plugins 旁边），同时也在 **Settings → Skills** 下。它是一个以搜索为核心的管理台：大号居中搜索框下面是整宽卡片画廊，筛选器（来源 / 调用方式 / 排序）收在 **筛选** 按钮后面的滑出面板里。点击卡片打开滑出式详情抽屉，里面有描述、调用方式、来源、路径，一个复制 `/名称` 命令的按钮，以及**卸载**按钮。顶栏提供**安装**（git URL 或本地路径：预览 → 勾选 → 链接）、**更新** mattpocock-skills 镜像、**健康检查**。同样的操作也可以通过 `/skills-uninstall`、`/skills-update`、`/skills-doctor` 完成。
+面板位于**主侧边栏**（Skills 图标，在 Plugins 旁边），同时也在 **Settings → Skills** 下。它是一个以搜索为核心的管理台：大号居中搜索框下面是整宽卡片画廊，筛选器（来源 / 调用方式 / 排序）收在 **筛选** 按钮后面的滑出面板里。点击卡片打开滑出式详情抽屉，里面有描述、调用方式、来源、路径，一个复制 `/名称` 命令的按钮，以及**卸载**按钮（仅限受管技能——内置与项目级技能只读展示）。顶栏提供**安装**（git URL 或本地路径：预览 → 勾选 → 链接）、**更新**（一次同步 `~/.dsh/repos` 下的全部镜像，且预览/安装/更新三处对镜像内隐藏目录的口径一致）、**健康检查**。同样的操作也可以通过 `/skills-uninstall`、`/skills-update`、`/skills-doctor` 完成。
 
 `/skills` 每一行的格式是 `- /名称 [调用方式 · 来源:仓库] — 描述`：
 
@@ -58,6 +60,7 @@ dsh plugin --profile desktop add ./dsh-skill-console-1.0.0.tgz
   config:
     skillsDir: /Users/you/.dsh/skills            # 默认值
     reposDir: /Users/you/.dsh/repos              # 默认值
+    managementMode: cc-switch                    # 可选；默认 standalone
 ```
 
 ## 分发
@@ -87,4 +90,7 @@ npm publish --access public
 ```sh
 node test/smoke.mjs
 node test/manager.test.mjs
+node test/security-regression.test.mjs
+node test/client-update.test.mjs
+node test/unified-management.test.mjs
 ```

@@ -5,11 +5,16 @@ English | [简体中文](README.zh-CN.md) | [日本語](README.ja.md)
 A DeepSeek Harness **community plugin** that gives you both a **visual Skills
 panel** and a **command-line skill manager**:
 
-- **Settings → Skills panel** — browse every installed skill (name · invocation · source · path), with search
+- **Settings → Skills panel** — one merged view of every skill DSH discovers:
+  the managed `~/.dsh/skills` root (repo mirrors + local skills, name ·
+  invocation · source · path), plus bundled and project-scope skills shown
+  read-only, with search
 - **`/skills`** — list skills (name · invocation · source repo), optionally filtered
 - **`/skills-uninstall <名字>`** — remove an installed skill
 - **`/skills-update [仓库名]`** — pull a repo mirror and re-sync its links (default `mattpocock-skills`)
 - **`/skills-doctor`** — health check: dead links, invalid frontmatter, orphaned mirrors
+
+For skills managed through CC Switch, set `managementMode: cc-switch`. This mode retains the skill list, search, and `/skills`, hides installation, updates, removal, and health-check actions, and rejects legacy management API calls. The default `standalone` mode retains the independent management features described below.
 
 ## Why
 
@@ -54,10 +59,13 @@ large centred search bar over a full-width card gallery, with the filters
 (source / invocation / sort) tucked into a slide-out panel behind the **筛选**
 button. Click a card for a slide-over detail drawer with the description,
 invocation, source, path, a button that copies its `/name` command, and an
-**uninstall** button. The header **installs** skills from a git URL or local path
-(preview → select → link), **updates** the mattpocock-skills mirror, and runs a
-**health check**. The same actions also exist as `/skills-uninstall`,
-`/skills-update` and `/skills-doctor`.
+**uninstall** button (managed-root skills only — bundled and project skills
+are shown read-only). The header **installs** skills from a git URL or local
+path (preview → select → link), **updates every repo mirror** under
+`~/.dsh/repos` in one go (skip sets match the preview: a mirror's hidden
+directories are hidden in all three flows), and runs a **health check**. The
+same actions also exist as `/skills-uninstall`, `/skills-update` and
+`/skills-doctor`.
 
 Each `/skills` line reads `- /name [invocation · 来源:repo] — description`:
 
@@ -75,6 +83,7 @@ patch (`cordis.patch.yml`) if needed:
   config:
     skillsDir: /Users/you/.dsh/skills            # default
     reposDir: /Users/you/.dsh/repos              # default
+    managementMode: cc-switch                    # optional; default standalone
 ```
 
 ## Distribution
@@ -111,4 +120,7 @@ new DSH release has been verified.
 ```sh
 node test/smoke.mjs
 node test/manager.test.mjs
+node test/security-regression.test.mjs
+node test/client-update.test.mjs
+node test/unified-management.test.mjs
 ```

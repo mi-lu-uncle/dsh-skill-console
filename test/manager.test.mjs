@@ -15,12 +15,15 @@ import {
   ensureRepo,
   findSkills,
   installSkills,
+  listPanelSkills,
   parseFrontmatter,
   previewRepo,
   readJson,
   repoNameFromSource,
+  skipForRepo,
   syncRepo,
   uninstallSkill,
+  updateMirrors,
 } from '../lib/index.js';
 
 // ---- parseFrontmatter ----
@@ -100,6 +103,11 @@ fs.rmSync(path.join(installDest, 'bbb')); // replace the symlink with a real dir
 fs.mkdirSync(path.join(installDest, 'bbb'));
 assert.deepEqual(installSkills(installDest, cloneDir, ['bbb']).conflicts, ['bbb']);
 
+// ---- skipForRepo keeps preview / install / update on one skip set ----
+assert.ok(skipForRepo('mattpocock-skills').has('misc'), 'mattpocock mirrors skip misc');
+assert.ok(!skipForRepo('some-repo').has('misc'), 'other repos only skip deprecated');
+assert.deepEqual([...skipForRepo('unknown')].sort(), ['deprecated']);
+
 // ---- readJson ----
 assert.deepEqual(await readJson({ body: '{"a":1}' }), { a: 1 });
 assert.deepEqual(await readJson({ body: '{"name":"x"}' }), { name: 'x' });
@@ -120,13 +128,47 @@ assert.ok(doc.dead.includes('ghost'), 'detects dead link');
 assert.ok(doc.invalid.some((s) => s.startsWith('baddir')), 'detects invalid frontmatter');
 assert.ok(doc.orphans.includes('orphan-repo'), 'detects orphan mirror');
 
-// ---- apply() wires four commands using config dirs ----
+// ---- updateMirrors: one repo, every repo, and failures ----
+const updRepos = path.join(tmp, 'update-mirrors');
+fs.mkdirSync(updRepos);
+const mirrorA = path.join(updRepos, 'mirror-a');
+sh('git', ['clone', '--quiet', origin, mirrorA]);
+const updDest = path.join(tmp, 'update-dest');
+const updAll = await updateMirrors(updRepos, updDest, null);
+assert.equal(updAll.ok, true);
+assert.equal(updAll.repos, 1);
+assert.equal(updAll.results[0].repo, 'mirror-a');
+assert.equal(updAll.results[0].ok, true);
+assert.ok(fs.existsSync(path.join(updDest, 'bbb')), 'all-mode links new skills');
+assert.ok(fs.existsSync(path.join(updDest, 'zzz')), 'non-mattpocock repos do not skip misc');
+const updOnly = await updateMirrors(updRepos, updDest, 'mirror-a');
+assert.equal(updOnly.ok, true);
+assert.equal(updOnly.results.length, 1);
+assert.equal((await updateMirrors(updRepos, updDest, 'nope')).ok, false);
+const emptyRepos = path.join(tmp, 'empty-repos');
+fs.mkdirSync(emptyRepos);
+assert.deepEqual(await updateMirrors(emptyRepos, updDest), { ok: true, repos: 0, results: [] });
+
+// ---- apply() wires four commands + six routes using config dirs ----
 const registered = [];
+const routes = [];
+const fakeRes = () => {
+  const res = { statusCode: 0, body: null };
+  res.writeHead = (status) => { res.statusCode = status; };
+  res.end = (text) => { res.body = JSON.parse(text); };
+  return res;
+};
 apply(
-  { commands: { register: (d) => registered.push(d) }, skills: { snapshot: async () => ({ complete: true, skills: [] }) } },
+  {
+    commands: { register: (d) => registered.push(d) },
+    skills: { snapshot: async () => ({ complete: true, skills: [] }) },
+    webServer: { register: (r) => { routes.push(r); return () => {}; } },
+    effect: (fn) => { const d = fn(); return () => (typeof d === 'function' ? d() : undefined); },
+  },
   { skillsDir: dest, reposDir: reposDir },
 );
 assert.deepEqual(registered.map((d) => d.name), ['skills', 'skills-uninstall', 'skills-update', 'skills-doctor']);
+assert.equal(routes.length, 6, 'wires the six panel API routes');
 
 fs.symlinkSync(repo, path.join(dest, 'foo'));
 const unRes = await registered[1].handler({ rawInput: 'foo' });
@@ -140,6 +182,47 @@ assert.equal(updRes.kind, 'error');
 const docRes = await registered[3].handler({});
 assert.equal(docRes.kind, 'success');
 assert.match(docRes.text, /技能体检/);
+
+// ---- POST /api/skill-console/update with {} updates every mirror ----
+const updRoute = routes.find((r) => r.path === '/api/skill-console/update');
+const routeRes = fakeRes();
+await updRoute.handler({ method: 'POST', headers: {}, body: '{}' }, routeRes);
+assert.equal(routeRes.statusCode, 200);
+assert.equal(routeRes.body.ok, true);
+assert.equal(routeRes.body.repos, 1, 'doctorReport reposDir has one dir: orphan-repo (kept apart from git sync)');
+assert.equal(routeRes.body.results[0].ok, false, 'orphan-repo is not a git repo — reported, not crashed');
+
+// ---- listPanelSkills merges managed + discovery; discovery is read-only ----
+fs.symlinkSync(path.join(repo, 'skills', 'engineering', 'bbb'), path.join(dest, 'zzz-mgr'));
+const panel = await listPanelSkills(dest, reposDir, {
+  snapshot: async () => ({
+    complete: true,
+    skills: [
+      { name: 'bbb', description: 'duplicate surface', invocation: { modelInvocable: true, userInvocable: true }, source: 'user-dsh' },
+      { name: 'office-docx', description: 'bundled docs skill', invocation: { modelInvocable: true, userInvocable: false }, source: 'bundled' },
+      { name: 'sealed', description: 'x', invocation: { modelInvocable: false, userInvocable: false }, source: 'custom' },
+    ],
+  }),
+});
+const managedBbb = panel.find((s) => s.name === 'bbb');
+assert.ok(managedBbb, 'managed entry present');
+assert.equal(managedBbb.managed, true, 'managed entry wins name collision');
+assert.ok(managedBbb.path.includes('zzz-mgr'), 'managed entry path follows the real link');
+const office = panel.find((s) => s.name === 'office-docx');
+assert.equal(office.managed, false, 'discovery-only entry is read-only');
+assert.equal(office.invocation, 'model-only');
+assert.equal(panel.find((s) => s.name === 'sealed').invocation, 'none', 'both-sides-off is none');
+const alone = await listPanelSkills(dest, reposDir, {
+  snapshot: async () => { throw new Error('no discovery here'); },
+});
+assert.ok(alone.some((s) => s.name === 'bbb'), 'discovery failure degrades to the managed list');
+
+// ---- uninstall resolves a frontmatter name that differs from the entry ----
+const fmRes = uninstallSkill(dest, 'bbb');
+assert.equal(fmRes.ok, true);
+assert.equal(fmRes.entry, 'zzz-mgr', 'resolves SKILL.md name -> entry');
+assert.ok(!fs.existsSync(path.join(dest, 'zzz-mgr')));
+assert.equal(uninstallSkill(dest, 'bbb').ok, false, 'gone is gone');
 
 fs.rmSync(tmp, { recursive: true, force: true });
 console.log('manager: OK');

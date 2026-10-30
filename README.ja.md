@@ -4,11 +4,13 @@
 
 DeepSeek Harness（DSH）向けの**コミュニティプラグイン**。**ビジュアルな Skills パネル**と**コマンドラインのスキル管理**を両方提供します：
 
-- **Settings → Skills パネル** — インストール済みスキルの一覧表示（名前 · 呼び出し方法 · ソース · パス）、検索対応
+- **Settings → Skills パネル** — DSH の全量検出と統合されたスキル一覧：管理下の `~/.dsh/skills`（リポジトリミラー + ローカルスキル；名前 · 呼び出し方法 · ソース · パス）に、同梱スキルやプロジェクトスコープのスキル（読み取り専用表示）を併記、検索対応
 - **`/skills`** — スキルの一覧表示（名前 · 呼び出し方法 · ソースリポジトリ）、キーワードフィルタ対応
 - **`/skills-uninstall <名前>`** — インストール済みスキルの削除
 - **`/skills-update [リポジトリ名]`** — ミラーを pull してリンクを再同期（デフォルト `mattpocock-skills`）
 - **`/skills-doctor`** — 構造チェック：死んだリンク、不正な frontmatter、孤立ミラー
+
+CC Switch でスキルを一元管理する場合は `managementMode: cc-switch` を設定します。このモードは一覧・検索・`/skills` のみを残し、インストール、更新、削除、診断の操作を非表示にして旧管理 API も拒否します。デフォルトの `standalone` モードでは従来の管理機能を利用できます。
 
 ## なぜ作ったか
 
@@ -42,7 +44,7 @@ dsh plugin --profile desktop add ./dsh-skill-console-1.0.0.tgz
 /skills-doctor             # 構造チェック
 ```
 
-パネルは**メインサイドバー**（Plugins の隣の Skills アイコン）と **Settings → Skills** の両方にあります。検索中心の管理コンソールで、中央に大きな検索バー、その下に全幅のカードギャラリーを配置し、フィルタ（ソース / 呼び出し方法 / 並び順）は **Filter** ボタンの後ろのスライドアウトパネルにあります。カードをクリックするとスライドオーバーの詳細ドロワーが開き、説明・呼び出し方法・ソース・パス、`/名前` コマンドのコピーボタン、**削除（uninstall）**ボタンが表示されます。ヘッダーからはスキルの**インストール**（git URL またはローカルパス：プレビュー → 選択 → リンク）、mattpocock-skills ミラーの**更新**、**ヘルスチェック**が実行できます。同じ操作は `/skills-uninstall`、`/skills-update`、`/skills-doctor` としても存在します。
+パネルは**メインサイドバー**（Plugins の隣の Skills アイコン）と **Settings → Skills** の両方にあります。検索中心の管理コンソールで、中央に大きな検索バー、その下に全幅のカードギャラリーを配置し、フィルタ（ソース / 呼び出し方法 / 並び順）は **Filter** ボタンの後ろのスライドアウトパネルにあります。カードをクリックするとスライドオーバーの詳細ドロワーが開き、説明・呼び出し方法・ソース・パス、`/名前` コマンドのコピーボタン、**削除（uninstall）**ボタンが表示されます（管理下のスキルのみ——同梱・プロジェクトのスキルは読み取り専用）。ヘッダーからはスキルの**インストール**（git URL またはローカルパス：プレビュー → 選択 → リンク）、`~/.dsh/repos` 配下の全ミラーを一括**更新**（プレビュー・インストール・更新の三所でミラー内の除外ディレクトリの基準を統一）、**ヘルスチェック**が実行できます。同じ操作は `/skills-uninstall`、`/skills-update`、`/skills-doctor` としても存在します。
 
 `/skills` の各行は `- /名前 [呼び出し · ソース:リポジトリ] — 説明` の形式です：
 
@@ -58,6 +60,7 @@ dsh plugin --profile desktop add ./dsh-skill-console-1.0.0.tgz
   config:
     skillsDir: /Users/you/.dsh/skills            # デフォルト
     reposDir: /Users/you/.dsh/repos              # デフォルト
+    managementMode: cc-switch                    # 任意；デフォルト standalone
 ```
 
 ## 配布
@@ -87,4 +90,7 @@ npm publish --access public
 ```sh
 node test/smoke.mjs
 node test/manager.test.mjs
+node test/security-regression.test.mjs
+node test/client-update.test.mjs
+node test/unified-management.test.mjs
 ```

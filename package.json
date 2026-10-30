@@ -1,6 +1,6 @@
 {
   "name": "@mi-lu-uncle/dsh-skill-console",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "DSH community plugin: a Skills settings panel plus /skills, /skills-uninstall, /skills-update, /skills-doctor.",
   "author": "milu",
   "repository": "https://github.com/mi-lu-uncle/dsh-skill-console",
@@ -23,6 +23,8 @@
     "lib",
     "cordis.patch.yml",
     "README.md",
+    "README.zh-CN.md",
+    "README.ja.md",
     "LICENSE"
   ],
   "license": "MIT",
